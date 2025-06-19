@@ -1,0 +1,47 @@
+# Pipeline CD
+
+<!-- Workflow de entrega contínua: checkout, testes, empacotamento e deploy simulado -->
+
+```yaml
+# .github/workflows/cd.yml
+
+name: CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  package-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout do código
+      - name: Checkout do código
+        uses: actions/checkout@v2
+
+      # 2. Instalar dependências Python
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+
+      # 3. Executar testes automatizados
+      - name: Executar testes
+        run: pytest
+
+      # 4. Gerar pacote (ZIP)
+      - name: Gerar artefato
+        run: |
+          zip -r calculos_app.zip app/ requirements.txt
+
+      # 5. Aprovação manual antes do deploy em produção
+      - name: Aprovar deploy em produção
+        if: ${{ success() }}
+        uses: actions/manual-approval@v1
+        with:
+          note: 'Aguardando aprovação para produção'
+
+      # 6. Deploy para staging (simulado)
+      - name: Deploy to staging
+        if: ${{ success() && github.event.action == 'approved' }}
+        run: echo "Deploy to staging ok"

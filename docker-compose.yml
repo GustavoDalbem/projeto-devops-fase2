@@ -1,0 +1,32 @@
+# Docker Compose
+
+<!-- Orquestra dois serviços: app e monitor de saúde -->
+
+```yaml
+# docker-compose.yml
+
+version: '3.8'
+
+networks:
+  devops-net:          # 1. Rede customizada
+    driver: bridge
+
+services:
+  app:
+    image: calculos-app:latest
+    container_name: calculos-app
+    networks:
+      - devops-net
+
+  monitor:
+    image: curlimages/curl:latest
+    container_name: calculos-monitor
+    depends_on:
+      - app
+    networks:
+      - devops-net
+    # 2. Simula verificação de saúde do serviço app
+    command: >
+      sh -c "sleep 5 && 
+             curl --fail http://app:80 || 
+             echo 'App fora do ar'"
